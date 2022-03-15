@@ -1,5 +1,6 @@
 "use strict";
-const { promises: { readFile} } = require("fs");
+// const { promises: { readFile} } = require("fs");
+const { get } = require('axios')
 
 class Handler {
     constructor({rekoSvc, translatorSvc}) {
@@ -13,7 +14,7 @@ class Handler {
                 Bytes: buffer
             }
         }).promise()
-        const workingItems = result.Labels.filter(({Confidence}) => Confidence > 80)
+        const workingItems = result.Labels.filter(({Confidence}) => Confidence > 1)
         const names = workingItems.map(({Name}) => Name).join(' and ')
         // console.log(workingItems)
         return {names, workingItems}
@@ -40,11 +41,21 @@ class Handler {
         return finalText.join('\n')
     }
 
+    async getImageBuffer(imageUrl) {
+        const response = await get(imageUrl, {
+            responseType: 'arraybuffer'
+        })
+        return Buffer.from(response.data, 'base64')
+    }
+
     async main(event) {
         try {
-            const imgBuffer = await readFile('./images/puttinha.jpg')
+            // const imgBuffer = await readFile('./images/puttinha.jpg')
+            const { imageUrl } = event.queryStringParameters
+            console.log('Downloading image')
+            const buffer = await this.getImageBuffer(imageUrl)
             console.log('Detecting Labels...')
-            const {names, workingItems} = await this.detectImageLabels(imgBuffer)
+            const {names, workingItems} = await this.detectImageLabels(buffer)
             console.log('Translating to Portuguese...')
             const texts = await this.translateText(names)
             console.log('Handling final object...')
