@@ -1,19 +1,28 @@
 org: fleite
 app: hello-sls
 service: hello-sls
-  configValidationMode: error
+configValidationMode: error
 
 frameworkVersion: '3'
 
 provider:
   name: aws
   runtime: nodejs14.x
+  region: us-east-2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - rekognition:DetectLabels
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - translate:TranslateText
+      Resource: "*"
 
 functions:
   hello:
     handler: handler.hello
     events:
-      -http:
-        method: GET
-        path: hello
-
+      - http:
+          method: GET
+          path: hello

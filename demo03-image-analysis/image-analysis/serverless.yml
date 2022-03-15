@@ -1,0 +1,27 @@
+org: fleite
+app: image-analysis
+service: image-analysis
+frameworkVersion: '3'
+configValidationMode: error
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-2
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - rekognition:DetectLabels
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - translate:TranslateText
+      Resource: "*"
+
+functions:
+  image-analysis:
+    handler: handler.main
+    events:
+      - http:
+          path: analyse
+          method: get
